@@ -4,7 +4,7 @@
 
 ## 🧠 O que é o Minishell?
 
-O **Minishell** é um projeto desenvolvido na 42 que consiste em criar um interpretador de comandos simples, inspirado no Bash.  
+O **Minishell** é o projeto mais desafiador que desenvolvi até o momento que escrevo esse read durante a minha formação da 42, ele consiste em criar um interpretador de comandos simples (por isso "mini"), inspirado no Bash.
 Seu principal objetivo é aprofundar os conhecimentos sobre:
 
 - Processos e sinais
@@ -21,7 +21,7 @@ Seu principal objetivo é aprofundar os conhecimentos sobre:
 
 - O projeto deve ser escrito em **C**, seguindo a **Norma da 42**.
 - Todas as **alocações dinâmicas** devem ser tratadas corretamente, **sem vazamentos de memória**.
-- É permitida **apenas uma variável global**, e ela deve armazenar **exclusivamente o número de um sinal**.
+- É permitida **apenas uma variável global**, e ela deve ser usada para armazenar **exclusivamente o número de um sinal**.
 - A função `readline()` pode vazar memória, mas **o código próprio não pode**.
 - O `Makefile` deve conter as regras obrigatórias: `$(NAME)`, `all`, `clean`, `fclean`, `re`.
 - Caso use a `libft`, ela deve ser copiada para uma pasta `libft/` com seu próprio Makefile.
@@ -32,7 +32,7 @@ Seu principal objetivo é aprofundar os conhecimentos sobre:
 
 ## 🧩 Como resolvemos o problema
 
-O projeto foi estruturado em módulos, seguindo princípios de separação de responsabilidades e reutilização de código.
+Fazendo a descrição
 
 ### 🔧 Funcionalidades implementadas
 
