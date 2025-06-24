@@ -3,19 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   cd.c                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acesar-m <acesar-m@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gangel-a <gangel-a@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 14:38:52 by acesar-m          #+#    #+#             */
-/*   Updated: 2025/05/14 18:25:59 by acesar-m         ###   ########.fr       */
+/*   Updated: 2025/06/15 23:24:26 by gangel-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-/**
- * Atualiza a variável de ambiente PWD e OLDPWD após mudar de diretório.
- * Você pode ajustar isso para trabalhar com sua própria lista de variáveis se não usar getenv/setenv.
- */
 static void	update_pwd(void)
 {
 	char	*cwd;
@@ -26,33 +22,37 @@ static void	update_pwd(void)
 	free(cwd);
 }
 
-/**
- * Implementa o comando `cd` com um caminho absoluto ou relativo.
- * - Se nenhum argumento for passado, tenta usar $HOME.
- * - Retorna 1 em caso de erro, 0 em sucesso.
- */
+static int	print_cd_err(char *msg)
+{
+	ft_printf_fd(2, "%s", msg);
+	return (1);
+}
+
 int	exec_cd(char **args)
 {
-    const char	*path;
-    char		*home;
+	const char	*path;
+	char		*home;
+	int			argc;
 
-    if (!args[1])
-    {
-        home = getenv("HOME");
-        if (!home)
-        {
-            ft_printf_fd(2, "cd: HOME not set\n");
-            return (1);
-        }
-        path = home;
-    }
-    else
-        path = args[1];
-    if (chdir(path) != 0)
-    {
-        ft_printf_fd(2, "cd: no such file or directory: %s\n", path);
-        return (1);
-    }
-    update_pwd();
-    return (0);
+	argc = 0;
+	while (args[argc])
+		argc++;
+	if (argc > 2)
+		return (print_cd_err("cd: too many arguments\n"));
+	if (!args[1])
+	{
+		home = getenv("HOME");
+		if (!home)
+			return (print_cd_err("cd: HOME not set\n"));
+		path = home;
+	}
+	else
+		path = args[1];
+	if (chdir(path) != 0)
+	{
+		ft_printf_fd(2, "cd: %s: No such file or directory\n", path);
+		return (1);
+	}
+	update_pwd();
+	return (0);
 }

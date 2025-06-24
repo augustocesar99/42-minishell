@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   libft.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acesar-m <acesar-m@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gangel-a <gangel-a@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/07 12:05:54 by gangel-a          #+#    #+#             */
-/*   Updated: 2025/05/19 21:36:49 by acesar-m         ###   ########.fr       */
+/*   Updated: 2025/06/13 17:39:15 by gangel-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ typedef struct s_list
 long			ft_atoi(const char *nptr);
 void			ft_bzero(void *s, size_t n);
 void			*ft_calloc(size_t nmemb, size_t size);
-void			ft_free_matrix(char **arr);
+void			ft_free_matrix(char **matrix);
 unsigned int	ft_htoi(char *hex);
 char			*ft_itoa(int n);
 int				ft_isalnum(int c);
@@ -66,6 +66,7 @@ char			**ft_strdup_split(char **envp);
 char			*ft_strnstr(const char *big, const char *little, size_t len);
 char			*ft_strmapi(char const *s, char (*f)(unsigned int, char));
 char			*ft_strrchr(const char *s, int c);
+int				ft_strtoll_check(const char *nptr, long long *out);
 char			*ft_strtrim(char const *s1, char const *set);
 char			*ft_substr(char const *s, unsigned int start, size_t len);
 int				ft_tolower(int c);

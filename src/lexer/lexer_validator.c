@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   lexer_validator.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acesar-m <acesar-m@student.42.fr>          +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 23:31:06 by gangel-a          #+#    #+#             */
-/*   Updated: 2025/05/19 21:35:40 by acesar-m         ###   ########.fr       */
+/*   Updated: 2025/06/03 16:12:42 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static void	check_quotes(char *input, int *i, int *single_quotes, int *double_quotes)
+static void	check_quotes(char *input, int *i, \
+	int *single_quotes, int *double_quotes)
 {
 	if (input[*i] == '\'')
 	{
@@ -41,11 +42,11 @@ int	validate_input(char *input)
 	int	single_quotes;
 	int	double_quotes;
 
-	i = 0;
+	i = -1;
 	parenthesis = 0;
 	single_quotes = 0;
 	double_quotes = 0;
-	while (input[i])
+	while (input[++i])
 	{
 		if (input[i] == '\'' || input[i] == '\"')
 			check_quotes(input, &i, &single_quotes, &double_quotes);
@@ -53,9 +54,12 @@ int	validate_input(char *input)
 			parenthesis++;
 		else if (input[i] == ')')
 			parenthesis--;
-		i++;
 	}
 	if (parenthesis != 0 || single_quotes != 0 || double_quotes != 0)
-		return (FAILURE); //create a function to set exit status to SYNTAX ERROR
+	{
+		ft_printf_fd(2,
+			"minishell: syntax error near unexpected token `newline'\n");
+		return (SYNTAX_ERROR);
+	}
 	return (SUCCESS);
 }

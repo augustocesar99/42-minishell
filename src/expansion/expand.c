@@ -12,16 +12,12 @@
 
 #include "minishell.h"
 
-//get_exit_status
-
-// Handles special cases for variable expansion such as : $? (last exit status) and quotes
 static char	*handle_special_cases(char *dollar, char **str, char **after_var,
 		char **expanded_var)
 {
 	if (*(dollar + 1) == '?')
 	{
-		// *expanded_var = ft_itoa(*get_exit_status()); WE HAVE TO MAKE THIS FUNC
-		*expanded_var = ft_strdup("NOT FIXED!");
+		*expanded_var = ft_itoa(exit_status(-1));
 		ft_gc_add(*expanded_var);
 		*after_var = ++(*str);
 	}
@@ -36,7 +32,7 @@ static char	*handle_special_cases(char *dollar, char **str, char **after_var,
 	return (*expanded_var);
 }
 
-static char	*handle_dollar(char *init_value, char **str)
+static char	*handle_dollar(char *init_value, char **str, char **env)
 {
 	char	*dollar;
 	char	*before_var;
@@ -51,7 +47,7 @@ static char	*handle_dollar(char *init_value, char **str)
 			(*str)++;
 		after_var = *str;
 		tmp = ft_substr(dollar, 1, after_var - dollar - 1);
-		expanded_var = getenv(tmp);
+		expanded_var = get_var_from_env(tmp, env);
 		free(tmp);
 	}
 	before_var = ft_substr(init_value, 0, dollar - init_value);
@@ -63,7 +59,7 @@ static char	*handle_dollar(char *init_value, char **str)
 	return (tmp);
 }
 
-char	*expand_var(char *str)
+char	*expand_var(char *str, char **env)
 {
 	char	*expanded_str;
 
@@ -72,19 +68,19 @@ char	*expand_var(char *str)
 	{
 		if (*str == '\'' )
 			while (*(++str) && *str != '\'')
-				continue;
+				continue ;
 		else if (*str == '\"')
 		{
 			while (*(++str) && *str != '\"')
 			{
-				if (*str == '$' && str[1] && (ft_isalnum(str[1])
-						|| ft_strchr("_?", str[1])))
-					expanded_str = handle_dollar(expanded_str, &str);
+				if (*str == '$' && str[1] && (ft_isalnum(str[1]) \
+					|| ft_strchr("_?", str[1])))
+					expanded_str = handle_dollar(expanded_str, &str, env);
 			}
 		}
-		else if (*str == '$' && str[1] && (ft_isalnum(str[1])
-					|| ft_strchr("_?\'\"", str[1])))
-			expanded_str = handle_dollar(expanded_str, &str);
+		else if (*str == '$' && str[1] && (ft_isalnum(str[1]) \
+				|| ft_strchr("_?\'\"", str[1])))
+			expanded_str = handle_dollar(expanded_str, &str, env);
 		str++;
 	}
 	return (expanded_str);
@@ -93,12 +89,18 @@ char	*expand_var(char *str)
 void	expand_tokens(t_tree *tree)
 {
 	t_token	*current;
+	char	**env;
 
 	current = tree->token;
+	env = get_envp(NULL);
 	while (current)
 	{
-		current->value = expand_var(current->value);
-
+		if (current->type == TK_REDIR_HDOC)
+		{
+			current = current->next->next;
+			continue ;
+		}
+		current->value = expand_var(current->value, env);
 		if (!(current->value))
 			handle_empty_value(&current, &tree);
 		if (ft_strchr_quote_aware(current->value, '*'))

@@ -3,41 +3,31 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acesar-m <acesar-m@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gangel-a <gangel-a@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 23:59:42 by gangel-a          #+#    #+#             */
-/*   Updated: 2025/05/19 21:35:10 by acesar-m         ###   ########.fr       */
+/*   Updated: 2025/06/23 19:13:23 by gangel-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	main(int argc, char **argv, char **envp)
+static void	shell_loop(void)
 {
 	char	*input;
 	t_token	*tokens;
 	t_tree	*tree;
-	char	**env;
 
-	(void)argc;
-	(void)argv;
-	env = ft_strdup_split(envp);
 	while (1)
 	{
 		setup_signals_prompt();
 		input = readline("minishell$ ");
 		if (!input)
 		{
-			ft_printf_fd(1, "exit\n", 5);
-			break ;
+			ft_printf_fd(1, "exit\n");
+			cleanup_and_exit(EXIT_SUCCESS);
 		}
-		if (exit_status(-1) == 130 && input[0] == '\0')
-		{
-			ft_gc_free(input);
-			ft_gc_exit();
-			exit_status(0);
-			continue;
-		}
+		ft_gc_add(input);
 		if (input[0])
 			add_history(input);
 		tokens = get_token_list(input);
@@ -45,16 +35,37 @@ int	main(int argc, char **argv, char **envp)
 		{
 			tree = get_tree(tokens);
 			if (tree)
-			{
-				expand_tokens(tree);
-				minishell_exec(tree, &env);
-			}
+				execute_tree(tree);
 		}
-		ft_gc_free(input);
 		ft_gc_exit();
 	}
-	delete_heredoc();
-	ft_free_split(env);
-	rl_clear_history();
-	return (0);
+}
+
+char	**get_envp(char **envp)
+{
+	static char	**env;
+
+	if ((!envp || !*envp) && !env)
+		return (NULL);
+	if (!envp || !*envp)
+		return (env);
+	if (env)
+		ft_free_matrix(env);
+	env = ft_strdup_split(envp);
+	return (env);
+}
+
+int	main(int argc, char **argv, char **envp)
+{
+	char	**env;
+
+	(void)argc;
+	(void)argv;
+	signal(SIGTSTP, SIG_IGN);
+	env = get_envp(envp);
+	(void)env;
+	shell_loop();
+	ft_printf_fd(1, "exit\n");
+	cleanup_and_exit(-1);
+	return (SUCCESS);
 }

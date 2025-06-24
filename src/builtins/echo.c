@@ -3,19 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   echo.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acesar-m <acesar-m@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gangel-a <gangel-a@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 14:31:26 by acesar-m          #+#    #+#             */
-/*   Updated: 2025/05/14 18:25:55 by acesar-m         ###   ########.fr       */
+/*   Updated: 2025/06/23 18:26:31 by gangel-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "minishell.h"
+#include "minishell.h"
 
-/**
- * Função para verificar se uma string é uma flag -n válida.
- * Pode aceitar múltiplos 'n' após o primeiro.
- */
 static t_bool	is_n_flag(char *str)
 {
 	int	i;
@@ -32,11 +28,6 @@ static t_bool	is_n_flag(char *str)
 	return (TRUE);
 }
 
-/**
- * Implementação do built-in echo com suporte à flag -n.
- * Imprime os argumentos separados por espaço e, por padrão, com quebra de linha.
- * Se a flag -n for passada, suprime a quebra de linha.
- */
 int	exec_echo(char **args)
 {
 	int		i;
@@ -44,19 +35,19 @@ int	exec_echo(char **args)
 
 	i = 1;
 	newline = TRUE;
-	while (args[i] && is_n_flag(args[i]))
+	if (args[1] && is_n_flag(args[1]))
 	{
 		newline = FALSE;
 		i++;
 	}
 	while (args[i])
 	{
-		write(1, args[i], ft_strlen(args[i]));
+		ft_printf_fd(1, "%s", args[i]);
 		if (args[i + 1])
-			write(1, " ", 1);
+			ft_printf_fd(1, " ");
 		i++;
 	}
 	if (newline)
-		write(1, "\n", 1);
+		ft_printf_fd(1, "\n");
 	return (0);
 }

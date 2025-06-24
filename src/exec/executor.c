@@ -3,107 +3,94 @@
 /*                                                        :::      ::::::::   */
 /*   executor.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acesar-m <acesar-m@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gangel-a <gangel-a@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 16:33:24 by acesar-m          #+#    #+#             */
-/*   Updated: 2025/05/19 21:36:04 by acesar-m         ###   ########.fr       */
+/*   Updated: 2025/06/23 17:05:42 by gangel-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "minishell.h"
+#include "minishell.h"
 
-static t_bool	has_heredoc(t_token *tok)
+static void	exec_or_node(t_tree *node)
 {
-	while (tok)
-	{
-		if (tok->type == TK_REDIR_HDOC)
-			return (TRUE);
-		tok = tok->next;
-	}
-	return (FALSE);
+	execute_tree(node->left);
+	if (exit_status(-1) != SUCCESS && exit_status(-1) < 128)
+		execute_tree(node->right);
 }
 
-void	exec_simple_command(t_token *token, char ***env)
+static void	exec_and_node(t_tree *node)
 {
-	char	**argv;
+	execute_tree(node->left);
+	if (exit_status(-1) == SUCCESS)
+		execute_tree(node->right);
+}
+
+static void	exec_subshell(t_tree *node)
+{
+	int		status;
+	pid_t	pid;
+	t_token	*current;
+	t_tree	*subshell;
+
+	pid = fork();
+	if (pid < 0)
+		exit(handle_error("fork"));
+	if (pid == 0)
+	{
+		current = node->token;
+		while (current->next)
+			current = current->next;
+		current->prev->next = NULL;
+		current = node->token->next;
+		subshell = get_tree(current);
+		if (subshell)
+			execute_tree(subshell);
+		ft_gc_exit();
+		exit(exit_status(-1));
+	}
+	wait_for_child(pid, &status);
+}
+
+static int	exec_redirection_node(t_tree *node)
+{
 	int		saved_stdin;
+	int		saved_stdout;
+	t_bool	err;
 
 	saved_stdin = dup(STDIN_FILENO);
-	if (has_heredoc(token) && handle_heredoc(token))
-	{
-		exit_status(130);
-		dup2(saved_stdin, STDIN_FILENO);
-		close(saved_stdin);
-		return ;
-	}
-	if (apply_redirections(token))
-	{
-		dup2(saved_stdin, STDIN_FILENO);
-		close(saved_stdin);
-		return ;
-	}
-	argv = convert_token_to_argv(token);
-	if (!argv || !argv[0])
-	{
-		ft_free_split(argv);
-		dup2(saved_stdin, STDIN_FILENO);
-		close(saved_stdin);
-		return ;
-	}
-	if (is_builtin(argv[0]))
-		exit_status(exec_builtin(argv, env, exit_status(-1)));
+	saved_stdout = dup(STDOUT_FILENO);
+	if (node->token->type == TK_REDIR_HDOC)
+		err = handle_heredoc(node->token);
 	else
-		exit_status(exec_external(argv, *env));
-
-	ft_free_split(argv);
+		err = process_heredoc_and_redirections(node->token, saved_stdin);
+	if (!err && node->left && node->left->token)
+		execute_tree(node->left);
 	dup2(saved_stdin, STDIN_FILENO);
+	dup2(saved_stdout, STDOUT_FILENO);
 	close(saved_stdin);
+	close(saved_stdout);
+	if (err)
+		return (FAILURE);
+	return (SUCCESS);
 }
 
-void	exec_child_left(t_tree *left, char ***env, int *fd)
-{
-	close(fd[0]);
-	dup2(fd[1], STDOUT_FILENO);
-	close(fd[1]);
-	execute_tree(left, env);
-	ft_gc_exit();
-}
-
-void	exec_child_right(t_tree *right, char ***env, int *fd)
-{
-	close(fd[1]);
-	dup2(fd[0], STDIN_FILENO);
-	close(fd[0]);
-	execute_tree(right, env);
-	ft_gc_exit();
-}
-
-void	exec_pipe_node(t_tree *node, char ***env)
-{
-	int		fd[2];
-	pid_t	pid1;
-	pid_t	pid2;
-
-	if (pipe(fd) == -1)
-		return ;
-	pid1 = fork();
-	if (pid1 == 0)
-		exec_child_left(node->left, env, fd);
-	pid2 = fork();
-	if (pid2 == 0)
-		exec_child_right(node->right, env, fd);
-	close(fd[0]);
-	close(fd[1]);
-	waitpid(pid1, NULL, 0);
-	waitpid(pid2, NULL, 0);
-}
-
-void	execute_tree(t_tree *node, char ***env)
+int	execute_tree(t_tree *node)
 {
 	if (!node)
-		return ;
-	if (node->token->type == TK_PIPE)
-		exec_pipe_node(node, env);
+		return (FAILURE);
+	if (node->token->type == TK_AND)
+		exec_and_node(node);
+	else if (node->token->type == TK_OR)
+		exec_or_node(node);
+	else if (node->token->type == TK_PIPE)
+		exec_pipe_node(node);
+	else if (node->token->type >= TK_REDIR_OUT_APP \
+		&& node->token->type <= TK_REDIR_OUT)
+		return (exec_redirection_node(node));
+	else if (node->token->type == TK_OPEN_PARENTHESIS)
+		exec_subshell(node);
 	else
-		exec_simple_command(node->token, env);
+		exec_simple_command(node->token);
+	return (SUCCESS);
 }

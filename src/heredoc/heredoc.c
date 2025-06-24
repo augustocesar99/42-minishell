@@ -10,32 +10,25 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "minishell.h"
+#include "minishell.h"
 
-static int	write_to_heredoc(int fd, char *end_condition, int is_expandable)
+static void	read_temp_file_and_write_to_pipe(int *pipe_fd, char *file_name)
 {
-	char	*line;
-	char	*expanded_line;
+	int		fd;
+	char	buffer[1024];
+	ssize_t	bytes_read;
 
-	line = readline("> ");
-	if (!line)
+	fd = open(file_name, O_RDONLY);
+	if (fd >= 0)
 	{
-		ft_printf_fd(STDERR_FILENO, "minishell: warning: here-document\
- delimited by end-of-file (wanted '%s')\n", end_condition);
-		return (SUCCESS);
+		bytes_read = read(fd, buffer, sizeof(buffer));
+		while (bytes_read > 0)
+		{
+			write(pipe_fd[1], buffer, bytes_read);
+			bytes_read = read(fd, buffer, sizeof(buffer));
+		}
+		close(fd);
 	}
-	ft_gc_add(line);
-	if (ft_strcmp(line, end_condition) == SUCCESS)
-		return (SUCCESS);
-	if (is_expandable)
-	{
-		expanded_line = expand_var(line);
-		ft_gc_free(line);
-		line = expanded_line;
-	}
-	write(fd, line, ft_strlen(line));
-	write(fd, "\n", 1);
-	return (FAILURE);
 }
 
 static int	init_heredoc(t_token *token, int *fd, char **file_name,
@@ -53,10 +46,11 @@ static int	init_heredoc(t_token *token, int *fd, char **file_name,
 	*fd = open(*file_name, O_CREAT | O_RDWR | O_TRUNC, 0644);
 	if (*fd < 0)
 		return (FAILURE);
-	if (!ft_strchr(token->value, '\"') && !ft_strchr(token->value, '\''))
+	if (!ft_strchr(token->next->value, '\"')
+		&& !ft_strchr(token->next->value, '\''))
 		*is_expandable = TRUE;
 	else
-		token->value = remove_quotes(token->value);
+		token->next->value = remove_quotes(token->next->value);
 	return (SUCCESS);
 }
 
@@ -64,32 +58,21 @@ static int	heredoc_child(t_token *token, int *pipe_fd)
 {
 	int		fd;
 	char	*file_name;
-	char	buffer[1024];
-	ssize_t	bytes_read;
 	t_bool	is_expandable;
 	char	*end_condition;
 
-	end_condition = token->next->value;
 	signal(SIGINT, handle_heredoc_sigint);
 	close(pipe_fd[0]);
 	if (init_heredoc(token, &fd, &file_name, &is_expandable) != SUCCESS)
 		_exit(FAILURE);
+	end_condition = token->next->value;
 	while (42)
+	{
 		if (write_to_heredoc(fd, end_condition, is_expandable) == SUCCESS)
 			break ;
-	close(fd);
-	fd = open(file_name, O_RDONLY);
-	if (fd >= 0)
-	{
-		bytes_read = 1;
-		while (bytes_read > 0)
-		{
-			bytes_read = read(fd, buffer, 1024);
-			if (bytes_read > 0)
-				write(pipe_fd[1], buffer, bytes_read);
-		}
-		close(fd);
 	}
+	close(fd);
+	read_temp_file_and_write_to_pipe(pipe_fd, file_name);
 	close(pipe_fd[1]);
 	_exit(SUCCESS);
 }
@@ -108,11 +91,6 @@ static int	finish_heredoc_parent(int default_stdin, int *pipe_fd, pid_t pid)
 		ft_printf_fd(1, "\n");
 		return (FAILURE);
 	}
-	if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
-	{
-		close(pipe_fd[0]);
-		return (FAILURE);
-	}
 	dup2(pipe_fd[0], STDIN_FILENO);
 	close(pipe_fd[0]);
 	return (SUCCESS);
@@ -128,16 +106,13 @@ int	handle_heredoc(t_token *token)
 	if (pipe(pipe_fd) < 0)
 		return (FAILURE);
 	signal(SIGINT, SIG_IGN);
-	if ((pid = fork()) < 0)
+	pid = fork();
+	if (pid < 0)
 		return (FAILURE);
 	if (pid == 0)
-	{
-		signal(SIGINT, handle_heredoc_sigint);
 		heredoc_child(token, pipe_fd);
-	}
-	signal(SIGINT, SIG_IGN);
 	if (finish_heredoc_parent(default_stdin, pipe_fd, pid))
 		return (FAILURE);
-	signal(SIGINT, SIG_DFL);
+	signal(SIGINT, handle_sigint);
 	return (SUCCESS);
 }

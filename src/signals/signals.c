@@ -6,15 +6,16 @@
 /*   By: acesar-m <acesar-m@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 11:13:30 by acesar-m          #+#    #+#             */
-/*   Updated: 2025/05/15 16:21:10 by acesar-m         ###   ########.fr       */
+/*   Updated: 2025/06/22 19:40:31 by acesar-m         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "minishell.h"
+#include "minishell.h"
 
 void	handle_sigint(int signum)
 {
 	(void)signum;
+	exit_status(130);
 	ft_printf("\n");
 	rl_replace_line("", 0);
 	rl_on_new_line();
