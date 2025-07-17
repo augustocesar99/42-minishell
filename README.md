@@ -2,7 +2,7 @@
 
 > _"fazendo a minha propria tela preta"_
 
-## 🧠 O que é o Minishell?
+## O que é o Minishell?
 
 O **Minishell** é o projeto mais desafiador que desenvolvi até o momento que escrevo esse read durante a minha formação da 42, ele consiste em criar um interpretador de comandos simples (por isso "mini"), inspirado no Bash.
 Seu principal objetivo é aprofundar os conhecimentos sobre:
@@ -17,7 +17,7 @@ Seu principal objetivo é aprofundar os conhecimentos sobre:
 
 ---
 
-## 📜 Regras para resolução do problema
+## Regras para resolução do problema
 
 - O projeto deve ser escrito em **C**, seguindo a **Norma da 42**.
 - Todas as **alocações dinâmicas** devem ser tratadas corretamente, **sem vazamentos de memória**.
@@ -30,11 +30,11 @@ Seu principal objetivo é aprofundar os conhecimentos sobre:
 
 ---
 
-## 🧩 Como resolvemos o problema
+## Como resolvemos o problema
 
 Fazendo a descrição
 
-### 🔧 Funcionalidades implementadas
+### Funcionalidades implementadas
 
 - Prompt interativo com histórico (`readline`)
 - Execução de comandos com base no `$PATH`
@@ -51,7 +51,7 @@ Fazendo a descrição
   - `Ctrl+D`: encerra o shell
   - `Ctrl+\`: ignorado
 
-### ⚙️ Built-ins
+### Built-ins
 
 - `echo` (com suporte à flag `-n`)
 - `cd` (com caminhos relativos ou absolutos)
@@ -61,7 +61,7 @@ Fazendo a descrição
 - `env`
 - `exit`
 
-### ✨ Bônus (se aplicável)
+### Bônus (se aplicável)
 
 - Execução condicional com `&&` e `||`
 - Agrupamento com `()`
@@ -69,7 +69,7 @@ Fazendo a descrição
 
 ---
 
-## 🧪 Como testar o projeto
+## Como testar o projeto
 
 ### Clone o repositório
 
@@ -107,4 +107,4 @@ Pressione Ctrl+\: não deve ocorrer nenhuma ação.
 Use o seguinte comando para rodar o valgrind e ja suprimir a lib readline:
 
 valgrind --leak-check=full --show-leak-kinds=all --gen-suppressions=all ./minishell
-⚠️ Observação: a função readline() pode gerar falsos positivos. Temos que certificar que nosso código próprio esteja livre de vazamentos e a lib readline() podemos apenas ignorar.
+Observação: a função readline() pode gerar falsos positivos. Temos que certificar que nosso código próprio esteja livre de vazamentos e a lib readline() podemos apenas ignorar.
