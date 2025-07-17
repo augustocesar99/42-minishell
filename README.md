@@ -74,7 +74,7 @@ Fazendo a descrição
 ### Clone o repositório
 
 bash
-git clone [https://github.com/seu-usuario/minishell.git](https://github.com/augustocesar99/42-minishell.git)
+git clone [https://github.com/augustocesar99/42-minishell.git](https://github.com/augustocesar99/42-minishell.git)
 cd minishell
 make
 
