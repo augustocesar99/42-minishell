@@ -73,38 +73,38 @@ Fazendo a descrição
 
 ### Clone o repositório
 
-bash
-git clone [https://github.com/augustocesar99/42-minishell.git](https://github.com/augustocesar99/42-minishell.git)
-cd minishell
-make
+- bash
+- git clone [https://github.com/augustocesar99/42-minishell.git](https://github.com/augustocesar99/42-minishell.git)
+- cd minishell
+- make
 
 ## Execute o shell
 
-./minishell
-Você verá algo como:
-minishell$
+- ./minishell
+- Você verá algo como:
+- minishell$
 
 ## 3. Exemplos de comandos
 
-echo Hello World
-echo $USER
-ls -l | grep .c
-cat << EOF
-linha 1
-linha 2
-EOF
-export TEST=42
-echo $TEST
+- echo Hello World
+- echo $USER
+- ls -l | grep .c
+- cat << EOF
+- linha 1
+- linha 2
+- EOF
+- export TEST=42
+- echo $TEST
 
 ## 4. Testando sinais
-Pressione Ctrl+C: o shell deve exibir um novo prompt.
+- Pressione Ctrl+C: o shell deve exibir um novo prompt.
 
-Pressione Ctrl+D: o shell deve ser encerrado.
+- Pressione Ctrl+D: o shell deve ser encerrado.
 
-Pressione Ctrl+\: não deve ocorrer nenhuma ação.
+- Pressione Ctrl+\: não deve ocorrer nenhuma ação.
 
 ## 5. Verificando vazamentos de memória
 Use o seguinte comando para rodar o valgrind e ja suprimir a lib readline:
 
-valgrind --leak-check=full --show-leak-kinds=all --gen-suppressions=all ./minishell
+- valgrind --leak-check=full --show-leak-kinds=all --gen-suppressions=all ./minishell
 Observação: a função readline() pode gerar falsos positivos. Temos que certificar que nosso código próprio esteja livre de vazamentos e a lib readline() podemos apenas ignorar.
